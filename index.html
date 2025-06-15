@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Trading Dashboard</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Inter", sans-serif; /* Using Inter font */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #f0f2f5; /* Light grey background */
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+        .main-container {
+            display: flex;
+            flex-grow: 1;
+            width: 100%;
+        }
+        .sidebar {
+            background-color: #1a202c; /* Darker grey for sidebar */
+            color: #e2e8f0; /* Light text color */
+            width: 18rem; /* Slightly wider sidebar for more content */
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow */
+            border-top-right-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto; /* Enable scrolling for long content */
+            transition: width 0.3s ease-in-out; /* Smooth resizing if collapse feature added later */
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1rem; /* Increased padding */
+            margin-bottom: 0.75rem; /* More space between items */
+            border-radius: 0.75rem;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            font-size: 1.05rem; /* Slightly larger text */
+        }
+        .sidebar-item:hover {
+            background-color: #2d3748; /* Darker hover background */
+            color: white;
+            transform: translateX(5px);
+        }
+        .sidebar-item.active {
+            background-color: #4299e1; /* Blue for active item */
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 6px 12px rgba(66, 153, 225, 0.4); /* Stronger shadow for active */
+        }
+        .sidebar-item svg {
+            margin-right: 1rem; /* More space for icons */
+            min-width: 24px; /* Ensure icons don't shrink */
+        }
+        .content-area {
+            flex-grow: 1;
+            padding: 2.5rem; /* More generous padding for content */
+            max-width: calc(100% - 18rem); /* Adjust for sidebar width */
+            margin: 0 auto;
+            width: 100%;
+        }
+        .card {
+            background-color: white;
+            padding: 2rem; /* Increased card padding for a premium feel */
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); /* Elevated shadow */
+            border: 1px solid #e2e8f0; /* Subtle border */
+        }
+
+        /* Responsive Grids */
+        .summary-cards-grid {
+            display: grid;
+            gap: 1.75rem; /* More space */
+            grid-template-columns: repeat(1, 1fr);
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+            .summary-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 1024px) { /* lg breakpoint */
+            .summary-cards-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .chart-grid-container {
+            display: grid;
+            gap: 1.75rem; /* More space */
+            grid-template-columns: repeat(1, 1fr);
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .chart-grid-container {
+                grid-template-columns: repeat(2, 1fr); /* 2 columns on medium and larger */
+            }
+        }
+
+        /* Specific styles for sections/titles */
+        .section-header {
+            font-size: 2.5rem; /* Larger main headings */
+            font-weight: 800; /* Extra bold */
+            color: #1a202c;
+            margin-bottom: 1rem;
+        }
+        .section-description {
+            font-size: 1.15rem;
+            color: #4a5568;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="flex flex-col min-h-screen">
+        <!-- Main Application Container -->
+        <div class="main-container">
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar">
+                <!-- App Logo/Title -->
+                <div class="text-4xl font-extrabold text-blue-400 mb-8 mt-4 text-center">TradePro.AI</div>
+
+                <!-- User Profile Summary in Sidebar -->
+                <div class="mb-10 text-center pb-6 border-b border-gray-700">
+                    <img src="https://placehold.co/80x80/007bff/ffffff?text=JD" alt="User Avatar" class="w-20 h-20 rounded-full mx-auto mb-3 border-2 border-blue-400 shadow-lg">
+                    <h3 class="text-xl font-semibold text-white">John Doe</h3>
+                    <p class="text-sm text-gray-400">Premium User</p>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="flex flex-col space-y-3">
+                    <a href="#" class="sidebar-item active" data-page="dashboard">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-page="portfolio">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart"><path d="M12.68 2.3A2.3 2.3 0 0 0 10.3 0H2.3L0 2.3v8.08a2.3 2.3 0 0 0 2.3 2.3h8.08l2.3-2.3V2.3z"/><path d="M22.7 10.3c.03.35.05.7.05 1.07V22.7a2.3 2.3 0 0 1-2.3 2.3H13.7a2.3 2.3 0 0 1-2.3-2.3v-8.08l2.3-2.3H22.7z"/><path d="M2.3 22.7c-.03-.35-.05-.7-.05-1.07V2.3A2.3 2.3 0 0 1 2.3 0h8.08l2.3 2.3V10.3L10.3 12.68H2.3zM22.7 2.3c.03-.35.05-.7.05-1.07V22.7a2.3 2.3 0 0 1-2.3 2.3H13.7a2.3 2.3 0 0 1-2.3-2.3v-8.08l2.3-2.3H22.7z"/></svg>
+                        <span>Portfolio</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-page="trades">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"/><path d="M12 7v5l2 2"/></svg>
+                        <span>Trade History</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-page="analytics">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bar-chart-3"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/><path d="M3 20h18"/></svg>
+                        <span>Performance Analytics</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-page="billing">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-credit-card"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                        <span>Billing & Subscriptions</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-page="settings">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.04.04a2 2 0 0 1 0 2.83l-.04.04a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.04-.04a2 2 0 0 1 0-2.83l.04-.04a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span>Settings</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-page="help">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-help"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                        <span>Help & Support</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-action="logout"> <!-- Changed data-page to data-action -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+                        <span>Logout</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Main Content Area (Dynamically Loaded based on sidebar selection) -->
+            <main class="content-area">
+                <!-- Dashboard Page Content -->
+                <section id="dashboard-page" class="page-content">
+                    <h1 class="section-header">Dashboard Overview</h1>
+                    <p class="section-description">
+                        Your personalized summary of trading performance and key account metrics.
+                    </p>
+
+                    <!-- Top Row: Key Metrics & Quick Actions -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        <!-- Overall P&L Card -->
+                        <div class="card bg-gradient-to-br from-blue-500 to-blue-600 text-white flex justify-between items-center p-6">
+                            <div>
+                                <h3 class="text-xl font-medium mb-1">Total Net Profit</h3>
+                                <p class="text-4xl font-bold">₹15,245.75</p>
+                                <p class="text-sm opacity-90 mt-1">All Time</p>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up opacity-80"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                        </div>
+                        <!-- Current Balance Card -->
+                        <div class="card bg-gradient-to-br from-green-500 to-green-600 text-white flex justify-between items-center p-6">
+                            <div>
+                                <h3 class="text-xl font-medium mb-1">Account Balance</h3>
+                                <p class="text-4xl font-bold">₹125,000.00</p>
+                                <p class="text-sm opacity-90 mt-1">Available Funds</p>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet opacity-80"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h12a2 2 0 0 1 0 4H5a2 2 0 0 0 0 4h12a2 2 0 0 0 2-2v-3"/><path d="M22 7v3"/></svg>
+                        </div>
+                        <!-- Subscription Status Card -->
+                        <div class="card bg-gradient-to-br from-purple-500 to-purple-600 text-white flex justify-between items-center p-6">
+                            <div>
+                                <h3 class="text-xl font-medium mb-1">Subscription Status</h3>
+                                <p class="text-4xl font-bold">Active</p>
+                                <p class="text-sm opacity-90 mt-1">Next deduction: ₹1,524.57</p>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-gem opacity-80"><path d="M6 3v12l6 6 6-6V3L12 9z"/></svg>
+                        </div>
+                    </div>
+
+                    <!-- Performance Charts - 2x2 Grid -->
+                    <section class="mb-12">
+                        <h2 class="text-3xl font-bold text-gray-900 mb-6">Performance Over Time</h2>
+                        <div class="chart-grid-container">
+                            <!-- Year Chart -->
+                            <div class="card min-h-[350px] flex flex-col justify-between">
+                                <h3 class="text-xl font-semibold text-gray-800 mb-4">Annual P&L (Cumulative)</h3>
+                                <div class="flex-grow flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200">
+                                    <p class="text-gray-500 text-center">Interactive Line Chart Placeholder</p>
+                                </div>
+                            </div>
+                            <!-- 6 Months Chart -->
+                            <div class="card min-h-[350px] flex flex-col justify-between">
+                                <h3 class="text-xl font-semibold text-gray-800 mb-4">Last 6 Months (Monthly Bars)</h3>
+                                <div class="flex-grow flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200">
+                                    <p class="text-gray-500 text-center">Interactive Bar Chart Placeholder</p>
+                                </div>
+                            </div>
+                            <!-- 1 Month Chart -->
+                            <div class="card min-h-[350px] flex flex-col justify-between">
+                                <h3 class="text-xl font-semibold text-gray-800 mb-4">Last 30 Days (Daily P&L)</h3>
+                                <div class="flex-grow flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200">
+                                    <p class="text-gray-500 text-center">Interactive Area Chart Placeholder</p>
+                                </div>
+                            </div>
+                            <!-- 1 Week Chart -->
+                            <div class="card min-h-[350px] flex flex-col justify-between">
+                                <h3 class="text-xl font-semibold text-gray-800 mb-4">Last 7 Days (Hourly Performance)</h3>
+                                <div class="flex-grow flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200">
+                                    <p class="text-gray-500 text-center">Interactive Candlestick/Line Chart Placeholder</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Recent Trades & Watchlist -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <!-- Recent Trades Section -->
+                        <section>
+                            <h2 class="text-3xl font-bold text-gray-900 mb-6">Recent Activities</h2>
+                            <div class="card">
+                                <h3 class="text-xl font-semibold text-gray-800 mb-4">Latest Closed Trades</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full bg-white rounded-lg">
+                                        <thead class="bg-gray-100 border-b border-gray-200">
+                                            <tr>
+                                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Symbol</th>
+                                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Type</th>
+                                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Volume</th>
+                                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">P/L</th>
+                                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100">
+                                            <tr><td class="py-3 px-4 text-sm font-medium text-gray-900">EURUSD</td><td class="py-3 px-4 text-sm text-gray-700">Buy</td><td class="py-3 px-4 text-sm text-gray-700">0.5</td><td class="py-3 px-4 text-sm text-green-600 font-semibold">₹2,500</td><td class="py-3 px-4 text-sm text-gray-700">2025-06-14</td></tr>
+                                            <tr><td class="py-3 px-4 text-sm font-medium text-gray-900">GBPUSD</td><td class="py-3 px-4 text-sm text-gray-700">Sell</td><td class="py-3 px-4 text-sm text-gray-700">0.2</td><td class="py-3 px-4 text-sm text-green-600 font-semibold">₹1,800</td><td class="py-3 px-4 text-sm text-gray-700">2025-06-13</td></tr>
+                                            <tr><td class="py-3 px-4 text-sm font-medium text-gray-900">USDJPY</td><td class="py-3 px-4 text-sm text-gray-700">Buy</td><td class="py-3 px-4 text-sm text-gray-700">0.3</td><td class="py-3 px-4 text-sm text-red-600 font-semibold">-₹900</td><td class="py-3 px-4 text-sm text-gray-700">2025-06-13</td></tr>
+                                            <tr><td class="py-3 px-4 text-sm font-medium text-gray-900">AUDCAD</td><td class="py-3 px-4 text-sm text-gray-700">Sell</td><td class="py-3 px-4 text-sm text-gray-700">0.1</td><td class="py-3 px-4 text-sm text-green-600 font-semibold">₹750</td><td class="py-3 px-4 text-sm text-gray-700">2025-06-12</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="mt-6 flex justify-end">
+                                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-5 rounded-xl shadow-md transition duration-200 ease-in-out transform hover:scale-105">View All Trades &rarr;</button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Watchlist Section -->
+                        <section>
+                            <h2 class="text-3xl font-bold text-gray-900 mb-6">Market Watchlist</h2>
+                            <div class="card">
+                                <h3 class="text-xl font-semibold text-gray-800 mb-4">Your Monitored Assets</h3>
+                                <div class="space-y-4">
+                                    <div class="flex justify-between items-center py-2 border-b last:border-b-0 border-gray-100">
+                                        <div class="font-medium text-gray-900">XAUUSD (Gold)</div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-green-600 font-semibold">↑ +0.85%</span>
+                                            <span class="text-gray-700">2320.50</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b last:border-b-0 border-gray-100">
+                                        <div class="font-medium text-gray-900">US30 (Dow Jones)</div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-red-600 font-semibold">↓ -0.22%</span>
+                                            <span class="text-gray-700">38650.70</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b last:border-b-0 border-gray-100">
+                                        <div class="font-medium text-gray-900">BTCUSD (Bitcoin)</div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-green-600 font-semibold">↑ +1.5%</span>
+                                            <span class="text-gray-700">67500.20</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-6 flex justify-end">
+                                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-5 rounded-xl shadow-md transition duration-200 ease-in-out transform hover:scale-105">Manage Watchlist</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <!-- Portfolio Page Content -->
+                <section id="portfolio-page" class="page-content hidden">
+                    <h1 class="section-header">Portfolio Overview</h1>
+                    <p class="section-description">
+                        Detailed breakdown of your current holdings, unrealized P&L, and asset allocation.
+                    </p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="card min-h-[350px]">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Current Open Positions</h2>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="py-2 px-3 text-left text-sm font-medium text-gray-600">Symbol</th>
+                                            <th class="py-2 px-3 text-left text-sm font-medium text-gray-600">Type</th>
+                                            <th class="py-2 px-3 text-left text-sm font-medium text-gray-600">Vol.</th>
+                                            <th class="py-2 px-3 text-left text-sm font-medium text-gray-600">Entry</th>
+                                            <th class="py-2 px-3 text-left text-sm font-medium text-gray-600">Current</th>
+                                            <th class="py-2 px-3 text-left text-sm font-medium text-gray-600">U.P/L</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr><td class="py-2 px-3 text-sm font-medium">USDCHF</td><td class="py-2 px-3 text-sm">Sell</td><td class="py-2 px-3 text-sm">0.7</td><td class="py-2 px-3 text-sm">0.8950</td><td class="py-2 px-3 text-sm">0.8935</td><td class="py-2 px-3 text-sm text-green-600">₹1,500</td></tr>
+                                        <tr><td class="py-2 px-3 text-sm font-medium">NZDUSD</td><td class="py-2 px-3 text-sm">Buy</td><td class="py-2 px-3 text-sm">0.4</td><td class="py-2 px-3 text-sm">0.6120</td><td class="py-2 px-3 text-sm">0.6135</td><td class="py-2 px-3 text-sm text-green-600">₹800</td></tr>
+                                        <tr><td class="py-2 px-3 text-sm font-medium">EURGBP</td><td class="py-2 px-3 text-sm">Sell</td><td class="py-2 px-3 text-sm">0.6</td><td class="py-2 px-3 text-sm">0.8550</td><td class="py-2 px-3 text-sm">0.8565</td><td class="py-2 px-3 text-sm text-red-600">-₹700</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-6 flex justify-end">
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow-md">Close All</button>
+                            </div>
+                        </div>
+                        <div class="card min-h-[350px] flex items-center justify-center">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Asset Allocation</h2>
+                                <p class="text-gray-500 text-center">Pie Chart Placeholder (Currency pairs, Indices, Commodities etc.)</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Trade History Page Content -->
+                <section id="trades-page" class="page-content hidden">
+                    <h1 class="section-header">Trade History</h1>
+                    <p class="section-description">
+                        A complete record of all your executed trades with detailed performance metrics.
+                    </p>
+                    <div class="card mb-6">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0 md:space-x-4">
+                            <input type="date" class="p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 flex-grow">
+                            <input type="date" class="p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 flex-grow">
+                            <select class="p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 flex-grow">
+                                <option>All Symbols</option>
+                                <option>EURUSD</option>
+                                <option>GBPUSD</option>
+                            </select>
+                            <select class="p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 flex-grow">
+                                <option>All Types</option>
+                                <option>Buy</option>
+                                <option>Sell</option>
+                            </select>
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl shadow-md transition duration-200">Apply Filters</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white rounded-lg">
+                                <thead class="bg-gray-100 border-b border-gray-200">
+                                    <tr>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Trade ID</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Symbol</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Type</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Volume</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Entry Time</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Entry Price</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Exit Time</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Exit Price</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">P/L</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <!-- Sample Data Rows -->
+                                    <tr><td class="py-3 px-4 text-sm">#1001</td><td class="py-3 px-4 text-sm font-medium">EURUSD</td><td class="py-3 px-4 text-sm">Buy</td><td class="py-3 px-4 text-sm">0.5</td><td class="py-3 px-4 text-sm">06/14 10:00</td><td class="py-3 px-4 text-sm">1.0850</td><td class="py-3 px-4 text-sm">06/14 11:30</td><td class="py-3 px-4 text-sm">1.0875</td><td class="py-3 px-4 text-sm text-green-600 font-semibold">₹2,500</td></tr>
+                                    <tr><td class="py-3 px-4 text-sm">#1002</td><td class="py-3 px-4 text-sm font-medium">GBPUSD</td><td class="py-3 px-4 text-sm">Sell</td><td class="py-3 px-4 text-sm">0.2</td><td class="py-3 px-4 text-sm">06/13 14:15</td><td class="py-3 px-4 text-sm">1.2720</td><td class="py-3 px-4 text-sm">06/13 15:00</td><td class="py-3 px-4 text-sm">1.2700</td><td class="py-3 px-4 text-sm text-green-600 font-semibold">₹1,800</td></tr>
+                                    <tr><td class="py-3 px-4 text-sm">#1003</td><td class="py-3 px-4 text-sm font-medium">USDJPY</td><td class="py-3 px-4 text-sm">Buy</td><td class="py-3 px-4 text-sm">0.3</td><td class="py-3 px-4 text-sm">06/13 09:45</td><td class="py-3 px-4 text-sm">145.10</td><td class="py-3 px-4 text-sm">06/13 10:15</td><td class="py-3 px-4 text-sm">145.00</td><td class="py-3 px-4 text-sm text-red-600 font-semibold">-₹900</td></tr>
+                                    <tr><td class="py-3 px-4 text-sm">#1004</td><td class="py-3 px-4 text-sm font-medium">AUDCAD</td><td class="py-3 px-4 text-sm">Sell</td><td class="py-3 px-4 text-sm">0.1</td><td class="py-3 px-4 text-sm">06/12 16:30</td><td class="py-3 px-4 text-sm">0.9150</td><td class="py-3 px-4 text-sm">06/12 17:00</td><td class="py-3 px-4 text-sm">0.9140</td><td class="py-3 px-4 text-sm text-green-600 font-semibold">₹750</td></tr>
+                                    <!-- More rows would be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-6 flex justify-center">
+                            <nav class="flex space-x-2">
+                                <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-200">&laquo; Previous</button>
+                                <button class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg">1</button>
+                                <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-200">2</button>
+                                <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-200">3</button>
+                                <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-200">Next &raquo;</button>
+                            </nav>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analytics Page Content -->
+                <section id="analytics-page" class="page-content hidden">
+                    <h1 class="section-header">Performance Analytics</h1>
+                    <p class="section-description">
+                        In-depth analysis of your trading strategies and key performance indicators.
+                    </p>
+
+                    <div class="card mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-5">Key Performance Indicators (KPIs)</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <div class="bg-blue-50 p-5 rounded-xl border border-blue-200 text-center">
+                                <h3 class="text-lg font-semibold text-blue-800 mb-1">Win Rate</h3>
+                                <p class="text-4xl font-bold text-blue-600">65%</p>
+                                <p class="text-sm text-gray-600">Total winning trades</p>
+                            </div>
+                            <div class="bg-green-50 p-5 rounded-xl border border-green-200 text-center">
+                                <h3 class="text-lg font-semibold text-green-800 mb-1">Profit Factor</h3>
+                                <p class="text-4xl font-bold text-green-600">1.85</p>
+                                <p class="text-sm text-gray-600">Gross profit / Gross loss</p>
+                            </div>
+                            <div class="bg-red-50 p-5 rounded-xl border border-red-200 text-center">
+                                <h3 class="text-lg font-semibold text-red-800 mb-1">Max Drawdown</h3>
+                                <p class="text-4xl font-bold text-red-600">-8.2%</p>
+                                <p class="text-sm text-gray-600">Largest peak-to-trough decline</p>
+                            </div>
+                            <div class="bg-purple-50 p-5 rounded-xl border border-purple-200 text-center">
+                                <h3 class="text-lg font-semibold text-purple-800 mb-1">Avg. Profit per Trade</h3>
+                                <p class="text-4xl font-bold text-purple-600">₹750</p>
+                                <p class="text-sm text-gray-600">Average net gain</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Equity Curve</h2>
+                        <div class="min-h-[400px] flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200">
+                            <p class="text-gray-500 text-center">Interactive Equity Curve Chart Placeholder</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="card min-h-[350px] flex flex-col justify-between">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Trade Distribution by Symbol</h2>
+                            <div class="flex-grow flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200">
+                                <p class="text-gray-500 text-center">Donut Chart Placeholder (e.g., EURUSD: 30%, GBPJPY: 20%)</p>
+                            </div>
+                        </div>
+                        <div class="card min-h-[350px] flex flex-col justify-between">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Performance by Day of Week</h2>
+                            <div class="flex-grow flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200">
+                                <p class="text-gray-500 text-center">Bar Chart Placeholder (e.g., Mon, Tue, Wed, Thu, Fri)</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Billing & Subscriptions Page Content -->
+                <section id="billing-page" class="page-content hidden">
+                    <h1 class="section-header">Billing & Subscriptions</h1>
+                    <p class="section-description">
+                        Manage your subscription, view payment history, and understand your profit-based fees.
+                    </p>
+
+                    <div class="card mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Your Current Subscription Tier</h2>
+                        <div class="bg-blue-50 p-6 rounded-xl border border-blue-200 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                            <div>
+                                <p class="text-xl font-semibold text-blue-800 mb-1">Status: <span class="text-blue-600 font-bold">Active</span></p>
+                                <p class="text-2xl font-bold text-blue-700">Performance Tier 1</p>
+                                <p class="text-md text-gray-600 mt-2">Features: Real-time data, advanced analytics, email alerts.</p>
+                                <p class="text-md text-gray-600">Fee Structure: <span class="font-bold">5% of profit above ₹10,000</span>.</p>
+                            </div>
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition duration-200 ease-in-out transform hover:scale-105">Change Plan</button>
+                        </div>
+
+                        <div class="mt-6 p-6 bg-yellow-50 border border-yellow-200 rounded-xl">
+                            <h3 class="text-2xl font-semibold text-yellow-800 mb-3">Next Profit Share Calculation</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-lg text-gray-700">Current Realized Profit (This Period):</p>
+                                    <p class="text-2xl font-bold text-green-700">₹12,500.00</p>
+                                </div>
+                                <div>
+                                    <p class="text-lg text-gray-700">Profit Threshold for Fee:</p>
+                                    <p class="text-2xl font-bold text-red-600">₹10,000.00</p>
+                                </div>
+                                <div>
+                                    <p class="text-lg text-gray-700">Profit Subject to Fee:</p>
+                                    <p class="text-2xl font-bold text-green-700">₹2,500.00</p>
+                                </div>
+                                <div>
+                                    <p class="text-lg text-gray-700">Estimated Next Deduction:</p>
+                                    <p class="text-2xl font-bold text-purple-700">₹125.00</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-4">Calculated as 5% of profit above ₹10,000. Deduction occurs upon next profit update past threshold.</p>
+                        </div>
+                    </div>
+
+                    <div class="card mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Payment History</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white rounded-lg">
+                                <thead class="bg-gray-100 border-b border-gray-200">
+                                    <tr>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Transaction ID</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Date</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Type</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Amount</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Status</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Invoice</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr><td class="py-3 px-4 text-sm">#TXN9876</td><td class="py-3 px-4 text-sm">2025-06-01</td><td class="py-3 px-4 text-sm">Profit Share Fee</td><td class="py-3 px-4 text-sm text-green-600 font-semibold">₹550.00</td><td class="py-3 px-4 text-sm text-green-700 font-medium">Paid</td><td class="py-3 px-4 text-sm"><a href="#" class="text-blue-600 hover:underline">Download</a></td></tr>
+                                    <tr><td class="py-3 px-4 text-sm">#TXN9875</td><td class="py-3 px-4 text-sm">2025-05-01</td><td class="py-3 px-4 text-sm">Profit Share Fee</td><td class="py-3 px-4 text-sm text-green-600 font-semibold">₹820.00</td><td class="py-3 px-4 text-sm text-green-700 font-medium">Paid</td><td class="py-3 px-4 text-sm"><a href="#" class="text-blue-600 hover:underline">Download</a></td></tr>
+                                    <tr><td class="py-3 px-4 text-sm">#TXN9874</td><td class="py-3 px-4 text-sm">2025-04-01</td><td class="py-3 px-4 text-sm">Profit Share Fee</td><td class="py-3 px-4 text-sm text-green-600 font-semibold">₹120.00</td><td class="py-3 px-4 text-sm text-green-700 font-medium">Paid</td><td class="py-3 px-4 text-sm"><a href="#" class="text-blue-600 hover:underline">Download</a></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-6 flex justify-center">
+                            <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg">View All</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Payment Methods</h2>
+                        <p class="text-gray-600 mb-4">Manage your linked payment methods for automatic deductions and top-ups.</p>
+                        <button class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-105">Add New Payment Method</button>
+                    </div>
+                </section>
+
+                <!-- Settings Page Content -->
+                <section id="settings-page" class="page-content hidden">
+                    <h1 class="section-header">Account Settings</h1>
+                    <p class="section-description">
+                        Manage your profile, security, notifications, and MT5 integrations.
+                    </p>
+
+                    <div class="card mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Personal Information</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="userName" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                <input type="text" id="userName" value="John Doe" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3">
+                            </div>
+                            <div>
+                                <label for="userEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                <input type="email" id="userEmail" value="john.doe@example.com" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3" readonly>
+                            </div>
+                            <div>
+                                <label for="contactPhone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <input type="tel" id="contactPhone" value="+91 98765 43210" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3">
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-105">Save Changes</button>
+                        </div>
+                    </div>
+
+                    <div class="card mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">MetaTrader5 Integration</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="mt5Broker" class="block text-sm font-medium text-gray-700 mb-1">Broker Name</label>
+                                <input type="text" id="mt5Broker" value="YourBrokerLtd" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3">
+                            </div>
+                            <div>
+                                <label for="mt5LoginId" class="block text-sm font-medium text-gray-700 mb-1">MT5 Login ID</label>
+                                <input type="text" id="mt5LoginId" value="MT5_123456" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3">
+                            </div>
+                            <div>
+                                <label for="mt5Password" class="block text-sm font-medium text-gray-700 mb-1">MT5 Password</label>
+                                <input type="password" id="mt5Password" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end">
+                            <button class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-105">Update MT5 Credentials</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Security Settings</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                                <input type="password" id="currentPassword" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3">
+                            </div>
+                            <div>
+                                <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                <input type="password" id="newPassword" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3">
+                            </div>
+                            <div>
+                                <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                                <input type="password" id="confirmPassword" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3">
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end">
+                            <button class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-105">Change Password</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Help & Support Page Content -->
+                <section id="help-page" class="page-content hidden">
+                    <h1 class="section-header">Help & Support</h1>
+                    <p class="section-description">
+                        Find answers to common questions or reach out to our support team.
+                    </p>
+
+                    <div class="card mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Frequently Asked Questions</h2>
+                        <div class="space-y-4">
+                            <details class="border border-gray-200 rounded-xl p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                                <summary class="font-semibold text-lg text-gray-800">How do I connect my MT5 account?</summary>
+                                <p class="mt-2 text-gray-700">Navigate to `Settings > MetaTrader5 Integration` and enter your broker details, MT5 login ID, and password. Your data will then be automatically synchronized.</p>
+                            </details>
+                            <details class="border border-gray-200 rounded-xl p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                                <summary class="font-semibold text-lg text-gray-800">When are subscription fees deducted?</summary>
+                                <p class="mt-2 text-gray-700">Subscription fees are deducted once your cumulative realized profit exceeds your tier's threshold (e.g., ₹10,000 for Performance Tier 1). The deduction happens automatically from your linked payment method.</p>
+                            </details>
+                            <details class="border border-gray-200 rounded-xl p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                                <summary class="font-semibold text-lg text-gray-800">Can I upgrade or downgrade my plan?</summary>
+                                <p class="mt-2 text-gray-700">Yes, you can manage your subscription plan from the `Billing & Subscriptions` section. Options for upgrading or downgrading will be available there.</p>
+                            </details>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Contact Support</h2>
+                        <p class="text-gray-700 mb-4">If you can't find your answer, please reach out to our support team.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="font-semibold text-gray-800">Email:</p>
+                                <a href="mailto:support@tradepro.ai" class="text-blue-600 hover:underline">support@tradepro.ai</a>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800">Phone:</p>
+                                <p>+91 123 456 7890 (Available Monday - Friday, 9 AM - 6 PM IST)</p>
+                            </div>
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-105">Open a Support Ticket</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Login/Register Page Content -->
+                <section id="login-page" class="page-content hidden">
+                    <div class="flex items-center justify-center min-h-[calc(100vh-8rem)]">
+                        <div class="bg-white p-10 rounded-2xl shadow-xl w-full max-w-md border border-gray-200">
+                            <h2 class="text-4xl font-extrabold text-gray-900 text-center mb-8">Welcome to TradePro.AI</h2>
+                            <form>
+                                <div class="mb-5">
+                                    <label for="loginEmail" class="block text-md font-medium text-gray-700 mb-2">Email Address</label>
+                                    <input type="email" id="loginEmail" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3.5" placeholder="your@example.com">
+                                </div>
+                                <div class="mb-6">
+                                    <label for="loginPassword" class="block text-md font-medium text-gray-700 mb-2">Password</label>
+                                    <input type="password" id="loginPassword" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3.5" placeholder="••••••••">
+                                </div>
+                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition duration-200 ease-in-out transform hover:scale-105 shadow-lg">Login Securely</button>
+                            </form>
+                            <p class="mt-8 text-center text-gray-600">
+                                New to TradePro.AI? <a href="#" class="text-blue-600 hover:underline font-semibold">Create Your Account</a>
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white p-4 text-center rounded-t-xl mt-auto shadow-inner">
+            <p>&copy; 2025 TradePro.AI. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarLinks = document.querySelectorAll('.sidebar-item');
+            const pages = document.querySelectorAll('.page-content');
+
+            // Function to show a specific page and update active link
+            const showPage = (pageId) => {
+                pages.forEach(page => {
+                    page.classList.add('hidden');
+                });
+                // Ensure the target page element exists before trying to show it
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.classList.remove('hidden');
+                } else {
+                    console.error(`Page with ID ${pageId} not found.`);
+                    // Fallback to dashboard if a requested page doesn't exist
+                    document.getElementById('dashboard-page').classList.remove('hidden');
+                }
+
+
+                sidebarLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+                const activeLink = document.querySelector(`.sidebar-item[data-page="${pageId.replace('-page', '')}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+            };
+
+            // Event listeners for sidebar links
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const pageName = event.currentTarget.dataset.page;
+                    const actionName = event.currentTarget.dataset.action; // Get the data-action attribute
+
+                    if (actionName === 'logout') {
+                        // Simulate a logout: for a wireframe, this means going to the login page
+                        console.log('User logged out. Simulating redirect to login page.');
+                        showPage('login-page');
+                    } else if (pageName) {
+                        showPage(`${pageName}-page`);
+                    }
+                });
+            });
+
+            // Show the dashboard page by default on load
+            showPage('dashboard-page');
+        });
+    </script>
+</body>
+</html>
